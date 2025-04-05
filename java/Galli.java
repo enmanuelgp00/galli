@@ -1,71 +1,52 @@
-
-import java.util.List;
+import javax.swing.JFrame;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.io.File;
 
-public class Galli {
-   List<String> listPathTree = new ArrayList<String>();
-   final String[] IMAGE_EXTENSIONS = {".jpg", ".gif", ".jpeg", ".png"};
-   File root;
+public class Galli extends JFrame implements ActionListener{
+	private Galli (String dirPath) {
+		File file = new File(dirPath);
+		if (!file.isDirectory()) {
+			System.out.println(file.getName() + " is not a directory");
+			System.exit(1);
+		}
+		ArrayList<File> imageShelf = getImageCollection(file);
+		ImageDealer imageDealer = new ImageDealer(imageShelf);
+		add(imageDealer);
+		setSize(800,600);
+		setVisible(true);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	@Override
+	public void actionPerformed(ActionEvent event) {
 
-   Galli (String[] args) {
-      handleArguments(args);
-      loadPaths(root);
-      if (listPathTree.size() == 0) {
-         System.out.println("There is no picture found.");
-         System.exit(1);
-      }
-      shuffle(listPathTree);
-      Exhibitor exhibitor = new Exhibitor(listPathTree);
-//      exhibitor.expose();   
-   }
-   public static void main(String[] args) {
-      new Galli(args);
-   }
-   void loadPaths(File dir) {
-      if (dir.listFiles().length > 0) {
-         for (File f : dir.listFiles()) {
-            if (f.isDirectory()) {
-               loadPaths(f);
-            } else {
-               String fullPath = f.getAbsolutePath();
-               if(isImage(fullPath)) {
-                    listPathTree.add(fullPath);
-                  } 
-            }
-         }
-      }      
-   }
+	}
+	private ArrayList<File> getImageCollection(File file) {
+		ArrayList<File> imageCollection = new ArrayList<File>();
+		if (file.listFiles().length > 0) {
+			for (File f : file.listFiles()) {
+				if (isImage(f)) {
+					imageCollection.add(f);
+				} else if (f.isDirectory()) {
+					imageCollection.addAll(getImageCollection(f));
+				}
+			}
+		}
+		return imageCollection;
+	}
 
-   boolean isImage (String path) {
-      for (String x : IMAGE_EXTENSIONS) {
-         if (path.contains(x)) {
-            return true;
-         }
-      }
-      return false;
-   } 
-   
-   void handleArguments(String[] args) {
-      if (args.length > 0) {
-         root = new File(args[0]);
-      } else {
-         root = new File(".");
-      }
-      if (!(root.isDirectory())) {
-         throw new IllegalArgumentException("\"" + args[0] + "\" should be a directory");
-      }
-   }
-   void shuffle(List<String> list) {
-      int j;
-      String s;
-      int length = list.size();
-      for (int i = 0; i < length; i++) {
-         j = (int) Math.floor(Math.random() * (i + 1));
-         s = list.get(i);
-         list.set(i, list.get(j));
-         list.set(j, s);
-      } 
-      
-   }
+	public boolean isImage(File file) {
+		String[] imageExtensions = {"jpg", "jpeg", "png", "gif"};
+		for (String ex : imageExtensions) {
+			if (file.getName().contains(ex)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static void main(String[] args) {
+		new Galli(args.length > 0 ? args[0]: ".");
+	}
 }
