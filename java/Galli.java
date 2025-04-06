@@ -1,10 +1,13 @@
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.io.File;
 
 public class Galli extends JFrame implements ActionListener{
+	final ImageDealer imageDealer;
 	private Galli (String dirPath) {
 		File file = new File(dirPath);
 		if (!file.isDirectory()) {
@@ -12,15 +15,20 @@ public class Galli extends JFrame implements ActionListener{
 			System.exit(1);
 		}
 		ArrayList<File> imageShelf = getImageCollection(file);
-		ImageDealer imageDealer = new ImageDealer(imageShelf);
+		suffle(imageShelf);
+		imageDealer = new ImageDealer(imageShelf);
+		MenuBar menuBar = new MenuBar(this);
+		setJMenuBar(menuBar);		
 		add(imageDealer);
-		setSize(800,600);
+		setSize(1100,600);
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	@Override
-	public void actionPerformed(ActionEvent event) {
-
+	public void actionPerformed(ActionEvent e) {
+		if (((JMenuItem)e.getSource()).getText().equals("Delete")) {
+			imageDealer.deleteImage();
+		}
 	}
 	private ArrayList<File> getImageCollection(File file) {
 		ArrayList<File> imageCollection = new ArrayList<File>();
@@ -49,4 +57,38 @@ public class Galli extends JFrame implements ActionListener{
 	public static void main(String[] args) {
 		new Galli(args.length > 0 ? args[0]: ".");
 	}
+	private void suffle(ArrayList<File> list) {
+		int j;
+		File f;
+		for (int i = 0; i < list.size(); i++) {
+			j = (int) Math.floor(Math.random() * (i + 1) );
+			f = list.get(i);
+			list.set(i, list.get(j));
+			list.set(j, f);
+		}
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
