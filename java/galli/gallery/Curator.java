@@ -1,24 +1,25 @@
-package galli.image;
-
-import javax.swing.JPanel;
-import javax.imageio.ImageIO;
+package galli.gallery;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
 
-public class ImageDealer extends JPanel {
+public class Curator extends JPanel {
+	private final Gallery gallery;
 	private int index = 0;
+	private double scale;
 	private BufferedImage image;
-	private ArrayList<File> imageList;
 	private Dimension lastSize = new Dimension();
-	public ImageDealer(ArrayList<File> imageList) {
-		this.imageList = imageList;
+	public Curator(Gallery gallery) {
+		this.gallery = gallery;
+		gallery.shuffle();
 		setSize(500, 500);
 		setBackground(Color.BLACK);
-		setImage( imageList.get(index) );
+		setBorder(null);
+		exhibit(gallery.get(index));
+
 		addComponentListener( new ComponentAdapter() {
 			@Override
 			public void componentResized( ComponentEvent e) {
@@ -28,11 +29,45 @@ public class ImageDealer extends JPanel {
 				}
 			}
 		} );
+
+		addMouseListener( new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (getWidth() / 2 < e.getX()) {
+					next();					
+				} else {
+					previous();
+				}
+			}
+		} );
+	}
+	public void next() {
+		if ((++index) > gallery.size() - 1) {
+			index = 0;
+		}
+		exhibit(gallery.get(index));		
+	}
+	public void previous() {
+		if ((--index) < 0) {
+			index = gallery.size() - 1;
+		}
+		exhibit(gallery.get(index));	
+
+	}
+	public void exhibit(File file) {
+		try {
+			image = ImageIO.read(file);
+			System.out.println(file.getName());
+			repaint();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		if (image == null) return ;
+
 		Graphics2D g2d = (Graphics2D) g;
 		
 		g2d.setRenderingHint (
@@ -50,7 +85,7 @@ public class ImageDealer extends JPanel {
 		
 		double widthRadio = (double) panelWidth / image.getWidth();
 		double heightRadio = (double) panelHeight / image.getHeight();
-		double scale = Math.min(widthRadio, heightRadio);
+		scale = Math.min(widthRadio, heightRadio);
 		
 		int scaledWidth = (int)(image.getWidth() * scale);
 		int scaledHeight = (int)(image.getHeight() * scale);
@@ -62,13 +97,5 @@ public class ImageDealer extends JPanel {
 			x, y, x + scaledWidth, y + scaledHeight,
 			0, 0, image.getWidth(), image.getHeight(),
 			null );
-		
-	}
-	public void setImage(File file) {
-		try {
-			image = ImageIO.read( file );
-		} catch (IOException ex) {
-			System.out.println(ex.getMessage());
-		}
 	}
 }
