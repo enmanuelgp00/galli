@@ -18,13 +18,11 @@ public class Gallery extends ArrayList<File> {
 		}
 	}
 	public void shuffle() {
-		
-	}
-	private boolean isImage(File file) {
-		for (String extension : new String[] { "jpg", "png", "jpeg", "gif" } )
-		if (file.getName().contains(extension)) {
-			return true;
+		for (int i = size() - 1; i > 0; i--) {
+			int f = (int) (Math.random() * i);
+			File s = get(i);
+			set(i, get(f));
+			set(f, s);
 		}
-		return false;
 	}
 }

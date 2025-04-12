@@ -1,4 +1,5 @@
 package galli.gallery;
+import galli.gallery.image.ImageChecker;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -13,9 +14,9 @@ public class Curator extends JPanel {
 	private BufferedImage image;
 	private Dimension lastSize = new Dimension();
 	public Curator(Gallery gallery) {
+		super(new FlowLayout(FlowLayout.LEFT));
 		this.gallery = gallery;
 		gallery.shuffle();
-		setSize(500, 500);
 		setBackground(Color.BLACK);
 		setBorder(null);
 		exhibit(gallery.get(index));
@@ -55,14 +56,27 @@ public class Curator extends JPanel {
 
 	}
 	public void exhibit(File file) {
+		if (ImageChecker.isImageGif(file)) {
+			System.out.println("This is a gif");
+		}
 		try {
 			image = ImageIO.read(file);
-			System.out.println(file.getName());
+			OnImageExibition(file);
 			repaint();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	public void OnImageExibition(File image) {	}
+	
+	public void delete() {
+		File file = gallery.get(index);
+		gallery.remove(index);
+		System.out.println(file.delete());
+		next();
+	}
+
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
