@@ -1,7 +1,6 @@
 package galli;
 import galli.gallery.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
 
@@ -13,19 +12,24 @@ public class Galli extends JFrame {
 				setTitle(image.getName());
 			}
 		};
-		JMenuBar menuBar = new JMenuBar();
-		JMenu menu = new JMenu("File");
-		menuBar.add(menu);
-		JMenuItem item = new JMenuItem("Delete");
-		item.addActionListener( new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				curator.delete();
-			}
-		});
-		menu.add(item);
+		JPopupMenu popupMenu = new JPopupMenu();
+		popupMenu.add(new JMenuItem("Delete"));	
 		add(curator);
-		setJMenuBar(menuBar);
+		
+		curator.addMouseListener( new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					popupMenu.show(curator, e.getX(), e.getY());
+				} else {
+					if (getWidth() / 2 < e.getX()) {
+						curator.next();
+					} else {
+						curator.previous();
+					}
+				}
+			}
+		} );
 		setSize(500, 500);
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

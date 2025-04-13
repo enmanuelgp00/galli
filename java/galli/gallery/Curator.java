@@ -2,23 +2,25 @@ package galli.gallery;
 import galli.gallery.image.ImageChecker;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class Curator extends JPanel {
+public abstract class Curator extends JPanel {
 	private final Gallery gallery;
 	private int index = 0;
 	private double scale;
 	private BufferedImage image;
 	private Dimension lastSize = new Dimension();
+
 	public Curator(Gallery gallery) {
 		super(new FlowLayout(FlowLayout.LEFT));
+		setFocusable(true);
+		requestFocusInWindow();
 		this.gallery = gallery;
-		gallery.shuffle();
-		setBackground(Color.BLACK);
-		setBorder(null);
+		gallery.shuffle();		
+		setBackground(Color.BLACK);	
 		exhibit(gallery.get(index));
 
 		addComponentListener( new ComponentAdapter() {
@@ -31,34 +33,41 @@ public class Curator extends JPanel {
 			}
 		} );
 
-		addMouseListener( new MouseAdapter() {
+		addKeyListener( new KeyAdapter() {
 			@Override
-			public void mousePressed(MouseEvent e) {
-				if (getWidth() / 2 < e.getX()) {
-					next();					
-				} else {
-					previous();
+			public void keyPressed(KeyEvent e){
+				switch (e.getKeyCode()) {
+					case KeyEvent.VK_RIGHT:
+							next();
+						break;
+					case KeyEvent.VK_LEFT:
+							previous();
+						break;
 				}
 			}
-		} );
+		});
+
 	}
 	public void next() {
 		if ((++index) > gallery.size() - 1) {
 			index = 0;
 		}
-		exhibit(gallery.get(index));		
+		exhibit(gallery.get(index));
 	}
 	public void previous() {
 		if ((--index) < 0) {
 			index = gallery.size() - 1;
 		}
-		exhibit(gallery.get(index));	
+		exhibit(gallery.get(index));
 
 	}
 	public void exhibit(File file) {
 		if (ImageChecker.isImageGif(file)) {
 			System.out.println("This is a gif");
 		}
+			if (index % 10 == 0) {
+				System.gc();
+			}
 		try {
 			image = ImageIO.read(file);
 			OnImageExibition(file);
@@ -68,13 +77,19 @@ public class Curator extends JPanel {
 		}
 	}
 	
-	public void OnImageExibition(File image) {	}
+	
+	public abstract void OnImageExibition(File image);
 	
 	public void delete() {
+		try {
+
 		File file = gallery.get(index);
 		gallery.remove(index);
 		System.out.println(file.delete());
-		next();
+		} catch (Exception x) {
+
+		}
+
 	}
 
 	@Override
@@ -107,9 +122,10 @@ public class Curator extends JPanel {
 		int x = (panelWidth - scaledWidth) / 2;
 		int y = (panelHeight - scaledHeight) / 2;
 		
-		g2d.drawImage(image, 
+		g2d.drawImage(image,
 			x, y, x + scaledWidth, y + scaledHeight,
 			0, 0, image.getWidth(), image.getHeight(),
 			null );
+		g2d.dispose();
 	}
 }

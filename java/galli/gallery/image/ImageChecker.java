@@ -7,10 +7,12 @@ public class ImageChecker {
     public static boolean isImageFile(File file) {
         try{
             FileImageInputStream stream = new FileImageInputStream(file);
+            
             byte[] header = new byte[8];
             if (stream.read(header) != header.length)  {
                 return false;
             }
+            
             return isJpeg(header) || isPng(header) || isGif(header) || isBmp(header);
         } catch (Exception e) {
             return false;
