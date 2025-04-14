@@ -5,7 +5,15 @@ import java.awt.event.*;
 import java.io.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.ImageReader;
 import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.ImageIcon;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 public abstract class Curator extends JPanel {
 	private final Gallery gallery;
@@ -13,14 +21,17 @@ public abstract class Curator extends JPanel {
 	private double scale;
 	private BufferedImage image;
 	private Dimension lastSize = new Dimension();
-
+	private JLabel label;
 	public Curator(Gallery gallery) {
-		super(new FlowLayout(FlowLayout.LEFT));
+		//super(new FlowLayout(FlowLayout.LEFT));
+		super(new BorderLayout());
 		setFocusable(true);
 		requestFocusInWindow();
 		this.gallery = gallery;
-		gallery.shuffle();		
-		setBackground(Color.BLACK);	
+		gallery.shuffle();
+		setBackground(Color.BLACK);
+		label = new JLabel();
+		add(label, BorderLayout.CENTER);
 		exhibit(gallery.get(index));
 
 		addComponentListener( new ComponentAdapter() {
@@ -62,43 +73,56 @@ public abstract class Curator extends JPanel {
 
 	}
 	public void exhibit(File file) {
+		newImageSelected(file);
+		if (index % 10 == 0) {
+			System.gc();
+		}
 		if (ImageChecker.isImageGif(file)) {
-			System.out.println("This is a gif");
-		}
-			if (index % 10 == 0) {
-				System.gc();
+			image = null;
+			label.setIcon( new ImageIcon(file.getPath()));
+			System.out.println("Width of label :" + label.getWidth());
+		} else {
+			try {
+				label.setIcon(null);
+				image = ImageIO.read(file);
+				repaint();
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
-		try {
-			image = ImageIO.read(file);
-			OnImageExibition(file);
-			repaint();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
 		}
+		newImageLoaded(file);
 	}
-	
-	
-	public abstract void OnImageExibition(File image);
-	
-	public void delete() {
-		try {
 
-		File file = gallery.get(index);
-		gallery.remove(index);
-		System.out.println(file.delete());
+	public abstract void newImageSelected(File image);
+	public abstract void newImageLoaded(File image);
+
+
+	public void deleteCurrentImage() {
+		try {
+			if (label.getIcon() != null) {
+				ImageIcon icon = (ImageIcon) label.getIcon();
+				icon.getImage().flush();
+				label.setIcon(null);
+			}
+			Path path = Paths.get( gallery.get(index).getPath());
+			Files.delete(path);
+			gallery.remove(index);
+			next();
 		} catch (Exception x) {
-
+			System.out.println(x.getMessage());
 		}
 
 	}
-
+	public void setImage(BufferedImage image) {
+		this.image = image;
+	}
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		if (image == null) return ;
 
 		Graphics2D g2d = (Graphics2D) g;
-		
+
 		g2d.setRenderingHint (
 			RenderingHints.KEY_INTERPOLATION,
 			RenderingHints.VALUE_INTERPOLATION_BILINEAR);

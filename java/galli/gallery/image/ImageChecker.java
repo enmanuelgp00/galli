@@ -7,20 +7,21 @@ public class ImageChecker {
     public static boolean isImageFile(File file) {
         try{
             FileImageInputStream stream = new FileImageInputStream(file);
-            
+
             byte[] header = new byte[8];
-            if (stream.read(header) != header.length)  {
+            int streamLength = stream.read(header);
+            stream.close();
+            if (streamLength != header.length) {
                 return false;
             }
-            
             return isJpeg(header) || isPng(header) || isGif(header) || isBmp(header);
         } catch (Exception e) {
             return false;
         }
     }
     private static boolean isJpeg(byte[] header) {
-        return 
-            header[0] == (byte) 0xff && 
+        return
+            header[0] == (byte) 0xff &&
             header[1] == (byte) 0xd8 &&
             header[2] == (byte) 0xff;
     }
@@ -30,7 +31,7 @@ public class ImageChecker {
 
     }
     private static boolean isGif(byte[] header) {
-        return 
+        return
             header[0] == 'G' &&
             header[1] == 'I' &&
             header[2] == 'F' &&
@@ -40,19 +41,18 @@ public class ImageChecker {
         try {
             byte[] header = new byte[8];
             FileImageInputStream stream = new FileImageInputStream(file);
-            if (stream.read(header) != header.length) {
+            int streamLength = stream.read(header);
+            stream.close();
+            if (streamLength != header.length) {
                 return false;
-
-            } else {
-                return isGif(header);
             }
-            
+           	return isGif(header);
         } catch (Exception e) {
             return false;
         }
     }
     private static boolean isBmp(byte[] header) {
-        return 
+        return
             header[0] == 'B' &&
             header[1] == 'M';
     }

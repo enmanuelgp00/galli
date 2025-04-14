@@ -14,7 +14,9 @@ public class Gallery extends ArrayList<File> {
 				addEveryImageIn(f);
 			}
 		} else {
-			if (ImageChecker.isImageFile(file)) add(file);
+			if (ImageChecker.isImageFile(file)) {
+				add(file);
+			}
 		}
 	}
 	public void shuffle() {
