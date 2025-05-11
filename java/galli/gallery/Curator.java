@@ -16,18 +16,28 @@ import java.nio.file.Paths;
 
 
 public abstract class Curator extends JPanel {
-	private final Gallery gallery;
+	private Gallery gallery;
 	private int index = 0;
 	private double scale;
 	private BufferedImage image;
 	private Dimension lastSize = new Dimension();
 	private JLabel label;
+	private String FILE_DATA_GALLERY =  "saved_gallery.data";
 	public Curator(Gallery gallery) {
 		//super(new FlowLayout(FlowLayout.LEFT));
 		super(new BorderLayout());
 		setFocusable(true);
 		requestFocusInWindow();
-		this.gallery = gallery;
+		if (getSavedGallery() != null && isSameGalleryRootDir(gallery, getSavedGallery())) {
+			setGallery(getSavedGallery());
+		} else {
+			if (gallery.isEmpty()) {
+				System.out.println("There are no pictures in : " + gallery.getRootDir().getAbsolutePath());
+				System.exit(0);
+			}
+			setGallery(gallery);
+			saveGallery(gallery);
+		}
 		gallery.shuffle();
 		setBackground(Color.BLACK);
 		label = new JLabel();
@@ -58,6 +68,37 @@ public abstract class Curator extends JPanel {
 			}
 		});
 
+	}
+	public void setGallery(Gallery gallery) {
+		this.gallery = gallery;
+	}
+	public Gallery getSavedGallery() {
+		Gallery savedGallery = null;
+		try (ObjectInputStream fileReader = new ObjectInputStream( new FileInputStream(FILE_DATA_GALLERY))) {
+			savedGallery = (Gallery) fileReader.readObject();
+			fileReader.close();
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return savedGallery;
+	}
+	public boolean isSameGalleryRootDir(Gallery gall0, Gallery gall1) {
+		boolean value = false;
+		try {
+			value = Files.mismatch(	Path.of(gall1.getRootDir().getAbsolutePath()),	Path.of(gall0.getRootDir().getAbsolutePath())) == -1 ;
+		} catch (IOException ex) {
+			System.out.println(ex.getMessage());
+		}
+
+		return value;
+	}
+	private void saveGallery(Gallery gallery) {
+		try (ObjectOutputStream fileWriter = new ObjectOutputStream( new FileOutputStream(FILE_DATA_GALLERY, true) ) ) {
+			fileWriter.writeObject(gallery);
+			fileWriter.close();
+		} catch (IOException ex) {
+			System.out.println(ex.getMessage());
+		}
 	}
 	public void next() {
 		if ((++index) > gallery.size() - 1) {

@@ -1,13 +1,18 @@
 package galli.gallery;
 import galli.gallery.image.ImageChecker;
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Gallery extends ArrayList<File> {
+public class Gallery extends ArrayList<File> implements Serializable {
+	File dir;
 	public Gallery (File dir) {
+		this.dir = dir;
 		addEveryImageIn(dir);
 	}
-
+	public File getRootDir() {
+		return dir;
+	}
 	private void addEveryImageIn(File file) {
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
